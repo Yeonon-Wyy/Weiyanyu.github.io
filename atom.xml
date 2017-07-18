@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2017-07-18T06:27:40.773Z</updated>
+  <updated>2017-07-18T06:29:27.564Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://yoursite.com/2017/07/18/android%20activity%20%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"/>
     <id>http://yoursite.com/2017/07/18/android activity 生命周期/</id>
     <published>2017-07-18T04:48:27.418Z</published>
-    <updated>2017-07-18T06:27:40.773Z</updated>
+    <updated>2017-07-18T06:29:27.564Z</updated>
     
     <content type="html"><![CDATA[<h3 id="Activity简介"><a href="#Activity简介" class="headerlink" title="Activity简介"></a>Activity简介</h3><p>Activity（活动） 是 Android 四大组件之一，也是核心组件。负责将界面展示给用户，并可以与用户有一定的交互，例如用户输入，用户点击按钮等等，简单来说的话就是用户能直接看到的就是Activity。</p>
 <a id="more"></a>
@@ -28,7 +28,7 @@
 <p>注意标题中的正常字眼，这意味着Activity的生命周期并不单一，具体的还有异常情况下的生命周期，将在后面讲到。</p>
 </blockquote>
 <p>组件的生命周期指的就是组件从被创建到销毁整个过程中所要经历的阶段，并呈现一定的周期性，先看一张图。</p>
-<p>![]/images/activity_lifecycle.png)</p>
+<p><img src="/images/activity_lifecycle.png" alt=""></p>
 <blockquote>
 <p>图片来源：android 开发者官方文档</p>
 </blockquote>
