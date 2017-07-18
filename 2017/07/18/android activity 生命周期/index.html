@@ -117,14 +117,13 @@
 <meta property="og:url" content="http://yoursite.com/2017/07/18/android activity 生命周期/index.html">
 <meta property="og:site_name" content="Yeonon&#39;s blog">
 <meta property="og:description" content="Activity简介Activity（活动） 是 Android 四大组件之一，也是核心组件。负责将界面展示给用户，并可以与用户有一定的交互，例如用户输入，用户点击按钮等等，简单来说的话就是用户能直接看到的就是Activity。">
-<meta property="og:image" content="http://yoursite.com/source/images/activity_lifecycle.png">
-<meta property="og:image" content="http://yoursite.com/source/images/activity_lifecycle_log.png">
-<meta property="og:image" content="http://yoursite.com/source/images/Activity_stack.png">
-<meta property="og:updated_time" content="2017-07-18T06:20:46.308Z">
+<meta property="og:image" content="http://yoursite.com/images/activity_lifecycle_log.png">
+<meta property="og:image" content="http://yoursite.com/images/Activity_stack.png">
+<meta property="og:updated_time" content="2017-07-18T06:27:40.773Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Activity 生命周期总结">
 <meta name="twitter:description" content="Activity简介Activity（活动） 是 Android 四大组件之一，也是核心组件。负责将界面展示给用户，并可以与用户有一定的交互，例如用户输入，用户点击按钮等等，简单来说的话就是用户能直接看到的就是Activity。">
-<meta name="twitter:image" content="http://yoursite.com/source/images/activity_lifecycle.png">
+<meta name="twitter:image" content="http://yoursite.com/images/activity_lifecycle_log.png">
 
 
 
@@ -421,15 +420,15 @@
 <p>注意标题中的正常字眼，这意味着Activity的生命周期并不单一，具体的还有异常情况下的生命周期，将在后面讲到。</p>
 </blockquote>
 <p>组件的生命周期指的就是组件从被创建到销毁整个过程中所要经历的阶段，并呈现一定的周期性，先看一张图。</p>
-<p><img src="/source/images/activity_lifecycle.png" alt=""></p>
+<p>![]/images/activity_lifecycle.png)</p>
 <blockquote>
 <p>图片来源：android 开发者官方文档</p>
 </blockquote>
 <p>有点经验的同学理解上图应该没什么压力（是在不明白的同学可以看看其他文章，都写得很好，在此我就不再赘述了），值得注意的一个细节是当要启动另一个活动的时候，当前活动会经历onPause() -&gt; onStop()，但是是新的活动的onCreate() (如果有必要的话) -&gt; onStart() -&gt; onResume() 路径先执行还是onPause() 先执行呢？</p>
 <p>我们先重写这些回调方法，在方法中打印一些日志作为标记（代码我就不贴了，很简单的一段代码）</p>
-<p><img src="/source/images/activity_lifecycle_log.png" alt=""></p>
+<p><img src="/images/activity_lifecycle_log.png" alt=""></p>
 <p>如图，我们看到，onPause() 是先执行的，我们可以尝试从源码找找为什么会这样。</p>
-<p><img src="/source/images/Activity_stack.png" alt=""></p>
+<p><img src="/images/Activity_stack.png" alt=""></p>
 <p>这是ActivityStack.java 里resumeTopActivityInnerLocked() 方法里的一段代码，从这段代码中我们可以看到，在启动另一个活动之前，是需要等待当前活动的pause方法执行完毕的，我们还看到里面调用的方法有startPausingLocked()，这个Locked是否使用了线程相关的技术呢？比如互斥锁？经过查找资料，可以知道启动活动的时候是经历很复杂的过程的，当中也涉及到了线程，具体内容因笔者水平实在有限，无法讲述，有兴趣的朋友可以继续研读源码，寻找答案。</p>
 <p><strong>Ps:</strong> 从上面我们知道了onPause执行完毕才会执行新的Activity，此时如果我们在onPause()方法中做了一些耗时较大的操作，就有可能导致UI阻塞等等情况，所以不建议在onPause里做耗时操作，如果必须要做一些操作的话，可以放入onStop方法中，这样就不会影响新活动的创建与执行了。</p>
 <h3 id="Activity异常生命周期"><a href="#Activity异常生命周期" class="headerlink" title="Activity异常生命周期"></a>Activity异常生命周期</h3><p>异常生命周期主要有两种情况：</p>
