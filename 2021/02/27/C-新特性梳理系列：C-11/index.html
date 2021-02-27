@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++ 11开篇
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>本文是《C++新特性梳理系列》的第一篇文章，我打算大概说一下写作这个系列的原因和目的，以及作为C++11新特性的开篇。</p>
+</blockquote>
+<p>之所以打算写这样一个系列的原因是，在我的工作当中，虽然是使用C++语言作为主力开发工具，但其实用到C++11新特性的地方并不多（其实在现在看来，C++11也不“新”了），甚至有的项目还停留在C++98，并且代码风格也是一直被人诟病的“C with class”。“C with class”风格编写的代码中存在很多诸如宏定义、过程式代码段等。这些东西也许在过去是一种很好的解决方案，但现如今也慢慢被淘汰了，技术在进步，我们作为开发者也应该与时俱进。这就引出了我的目的，一方面是为优化工作中的项目代码做好知识储备，以便如果有机会能重构，优化老代码，不会太过慌乱。另一方面是作为开发者，几乎都会经历”从一开始什么也不懂到几乎每日都重复几乎一模一样的工作”这么一个过程。这个过程会逐步消磨我们的热情（无论当初是多么的热爱编程），而学习新东西可以大大缓解这种情况。之所以说只是“缓解”而不是消除，是因为出于严谨考虑，我认为随着年龄的增长，一些外部因素或多或少会影响到热爱编程的热情，我们个人能做到的只是减缓，而非消除。</p>
+<p>扯远了，赶紧回来，下面是C++11所有的新特性:</p>
+<h2 id="feature-list"><a href="#feature-list" class="headerlink" title="feature list"></a>feature list</h2><blockquote>
+<p>以下数据来自cppreferencec网站.</p>
+</blockquote>
+<ul>
+<li><a href="https://en.cppreference.com/w/cpp/language/auto" target="_blank" rel="noopener"><code>auto</code></a> and <a href="https://en.cppreference.com/w/cpp/language/decltype" target="_blank" rel="noopener"><code>decltype</code></a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/function#Function_definition" target="_blank" rel="noopener">defaulted</a> and <a href="https://en.cppreference.com/w/cpp/language/function#Deleted_functions" target="_blank" rel="noopener">deleted</a> functions</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/final" target="_blank" rel="noopener"><code>final</code></a> and <a href="https://en.cppreference.com/w/cpp/language/override" target="_blank" rel="noopener"><code>override</code></a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/function#Function_declaration" target="_blank" rel="noopener">trailing return type</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/reference" target="_blank" rel="noopener">rvalue references</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/move_constructor" target="_blank" rel="noopener">move constructors</a> and <a href="https://en.cppreference.com/w/cpp/language/move_assignment" target="_blank" rel="noopener">move assignment operators</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/enum" target="_blank" rel="noopener">scoped enums</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/constexpr" target="_blank" rel="noopener"><code>constexpr</code></a> and <a href="https://en.cppreference.com/w/cpp/named_req/LiteralType" target="_blank" rel="noopener">literal types</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/list_initialization" target="_blank" rel="noopener">list initialization</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/initializer_list#Delegating_constructor" target="_blank" rel="noopener">delegating</a> and <a href="https://en.cppreference.com/w/cpp/language/using_declaration" target="_blank" rel="noopener">inherited</a> constructors</li>
+<li>brace-or-equal <a href="https://en.cppreference.com/w/cpp/language/initialization" target="_blank" rel="noopener">initializers</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/nullptr" target="_blank" rel="noopener"><code>nullptr</code></a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/types#Integer_types" target="_blank" rel="noopener"><code>long long</code></a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/types#Character_types" target="_blank" rel="noopener"><code>char16_t</code> and <code>char32_t</code></a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/type_alias" target="_blank" rel="noopener">type aliases</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/parameter_pack" target="_blank" rel="noopener">variadic templates</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/union" target="_blank" rel="noopener">generalized (non-trivial) unions</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/named_req/PODType" target="_blank" rel="noopener">generalized PODs</a> (<a href="https://en.cppreference.com/w/cpp/named_req/TrivialType" target="_blank" rel="noopener">trivial types</a> and <a href="https://en.cppreference.com/w/cpp/named_req/StandardLayoutType" target="_blank" rel="noopener">standard-layout types</a>)</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/string_literal" target="_blank" rel="noopener">Unicode string literals</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/user_literal" target="_blank" rel="noopener">user-defined literals</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/attributes" target="_blank" rel="noopener">attributes</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/lambda" target="_blank" rel="noopener">lambda expressions</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/noexcept_spec" target="_blank" rel="noopener"><code>noexcept</code></a> specifier and <a href="https://en.cppreference.com/w/cpp/language/noexcept" target="_blank" rel="noopener"><code>noexcept</code></a> operator</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/alignof" target="_blank" rel="noopener"><code>alignof</code></a> and <a href="https://en.cppreference.com/w/cpp/language/alignas" target="_blank" rel="noopener"><code>alignas</code></a></li>
+<li>multithreaded <a href="https://en.cppreference.com/w/cpp/language/memory_model" target="_blank" rel="noopener">memory model</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/storage_duration#Storage_duration" target="_blank" rel="noopener">thread-local storage</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/memory#Garbage_collector_support" target="_blank" rel="noopener">GC interface</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/range-for" target="_blank" rel="noopener">range-<code>for</code></a> (based on a Boost library)</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/static_assert" target="_blank" rel="noopener"><code>static_assert</code></a> (based on a Boost library)</li>
+</ul>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>本文作为开遍文，介绍了写作本系列文章的原因和目的，并列举了C++11的各个新特性。我会在后续的文章中一一介绍每个新特性，如果项目中有用到该特性的地方，我会加上一些真实项目中使用的示例，否则就只会是一些demo。</p>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
