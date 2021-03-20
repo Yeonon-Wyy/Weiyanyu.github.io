@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++ 11新增关键字
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>C++11新增了不少关键字，有些关键是为了扩充语言功能，例如auto，decltype等，有些关键字是为了解决老版本存在的问题，例如nullptr,long long等。本文将简单介绍这些新增关键字的作用以及写几个简单使用的demo作为示例，实际项目中可能会大量用到这些关键字，但由于比较简单，所以就不拿实际项目举例了。</p>
+<h2 id="auto和decltype"><a href="#auto和decltype" class="headerlink" title="auto和decltype"></a>auto和decltype</h2><p>关于<strong>auto</strong>，使用动态语言编写程序的过程中，往往不需要太关注变量类型，使开发者把重心放在具体的业务逻辑上，所以写起来会非常爽（当然也可能会造成维护灾难）。这些语言通常会有类似”var”的关键字用来声明变量。有些文章在介绍auto的时候会说auto和其他语言的var是一样的，真的吗？不着急下结论，C++11中的auto有如下定义：</p>
+<blockquote>
+<p>For variables, specifies that the type of the variable that is being declared will be automatically deduced from its initializer.</p>
+</blockquote>
+<p>这句话的关键在于“<strong>自动推导</strong>”，而且是编译器会在编译期间根据变量的初始化表达式作自动推导。注意到这是“编译期”完成的事，在编译完成后的目标码是不存在auto的，而是由推断出来的类型替代，即类型检查依然是存在的，这是和动态语言中var关键字的一个明显区别。下面来讨论一下auto的优劣。</p>
+<p>auto的好处是可以缩短代码的长度，尤其是其变量类型极其复杂的情况，例如迭代器的场景：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator iter = v.<span class="built_in">begin</span>();</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator citer = v.cbegin();</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::reverse_iterator riter = v.rbegin();</span><br></pre></td></tr></table></figure>
+
+<p>如上，开发者需要明确知道并写出begin(),cbegin(),rbegin()的返回值类型才能通过编译。这些冗长的类型会开发者造成一定程度的心智负担，有了auto之后，我们可以改写上面的代码:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;;</span><br><span class="line"><span class="keyword">auto</span> iter = v.<span class="built_in">begin</span>();</span><br><span class="line"><span class="keyword">auto</span> citer = v.cbegin();</span><br><span class="line"><span class="keyword">auto</span> riter = v.rbegin();</span><br></pre></td></tr></table></figure>
+
+<p>是不是简洁了很多？但依然有不足的地方，改写后的代码确实是简介了许多，但这降低了代码的可读性，假设上面的begin()函数是一个其他模块的函数，你并不熟悉其实现，在阅读到这段代码的时候是否会产生困惑呢？（这种困惑也发生在多态的场景）。其次是auto在一些场景会产生额外的开销，现在考虑一个表达式会返回一个引用，如果直接使用auto去接受，会消除这个引用，即会产生一次拷贝，当然，这个问题是可以通过使用<strong>auto&amp;</strong>去解决的。</p>
+<p>auto有好有坏，但总体来说是利大于弊，尽量使用auto可以减少冗长的代码，但也要小心一些特殊的场景选择使用。</p>
+<blockquote>
+<p>Ps:auto在c++14以及c++14中有功能扩充，本文暂不介绍，后续C++14以及C++17系列会再次提到。</p>
+</blockquote>
+<p>decltype和auto都同属于类型推导，但不同的是：<strong>auto是通过表达式进行推导，而decltype是以一个表达式作为参数，返回一个类型。</strong>下面是一个使用decltype的例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">42</span>;</span><br><span class="line"><span class="keyword">decltype</span>(a) b = <span class="number">50</span>;</span><br></pre></td></tr></table></figure>
+
+<p>a的类型是int, a的类型也是int,decltype推导表达式a得到一个类型int, 随后用于声明并定义变量b，所以变量b的类型是int。decltype的作用不止于次，更在于可以拿到一些匿名函数或者匿名struct等的类型。例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;s;</span><br><span class="line"><span class="comment">// 注意这个struct是一个匿名的struct</span></span><br><span class="line"><span class="keyword">decltype</span>(s) s2;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，s仅仅是上述所定义的结构体的变量名字，并非类型，这个struct是匿名的。如果想定义其他的和这个匿名struct一样的变量，就可以使用decltype进行类型推导，从而完成任务。decltype的推导规则其实并非那么简单，下面是4个decltype的推导规则(来源是《深入理解C++11》):</p>
+<ol>
+<li>如果e是一个没有带括号的标记符表达式或者类成员访问表达式，那么的decltype（e）就是e所命名的实体的类型。此外，如果e是一个被重载的函数，则会导致编译错误。</li>
+<li>否则 ，假设e的类型是T，如果e是一个将亡值，那么decltype（e）为T&amp;&amp;</li>
+<li>否则，假设e的类型是T，如果e是一个左值，那么decltype（e）为T&amp;。</li>
+<li>否则，假设e的类型是T，则decltype（e）为T。</li>
+</ol>
+<p>限于篇幅，这里不写demo了。</p>
+<h2 id="default和deleted"><a href="#default和deleted" class="headerlink" title="default和deleted"></a>default和deleted</h2><p>default和delete都是针对类的特殊成员函数的，具体的说是<strong>构造函数，拷贝构造函数，移动构造函数，赋值构造函数以及析构函数</strong>。</p>
+<p>default的作用是<strong>提醒编译器合成上述几个特殊的成员函数默认实现版本</strong>。什么意思呢？看下面的demo:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Person() = <span class="keyword">default</span>;</span><br><span class="line">    Person(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name):</span><br><span class="line">        mName(name) &#123;&#125;</span><br><span class="line">    Person(<span class="keyword">const</span> Person&amp; person) = <span class="keyword">default</span>;</span><br><span class="line">    Person&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Person&amp; person) = <span class="keyword">default</span>;</span><br><span class="line">    Person(Person&amp;&amp; person) = <span class="keyword">default</span>;</span><br><span class="line">    ~Person() = <span class="keyword">default</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; <span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> mName; &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> mName;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">Person <span class="title">p</span><span class="params">(<span class="string">"yeonon"</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Person <span class="title">p2</span><span class="params">(p)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p2.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    Person p3;</span><br><span class="line">    p3 = p;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p3.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    Person p4 = <span class="built_in">std</span>::<span class="built_in">move</span>(p);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p4.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>众所周知，上述几个特殊成员函数，如果用户没有自定义的话，编译器是承诺会生成默认版本实现的。在Person类里定义了一个自定义参数的构造函数，所以编译器是不会生成默认构造函数的，如果又想要一个无参的构造函数的化，可以通过给一个空的实现，使用=default也许是一个更好的选择，析构函数同理。=default对于拷贝构造和移动构造函数和赋值构造函数的作用也许没那么明显。因为既然我们写出了拷贝和移动构造函数以及赋值构造函数的声明式，就说明我们是希望作自己作一些处理的，当然写出来并加上=default修饰的化可以提高代码的可读性。</p>
+<p>接下来看下delete，准确的说是=delete, 因为delete在C++11之前就存在了，不过其之前作用是释放堆内存。=delete的作用是<strong>禁用被修饰的函数</strong>。看下demoe:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Person() = <span class="keyword">default</span>;</span><br><span class="line">    Person(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name):</span><br><span class="line">        mName(name) &#123;&#125;</span><br><span class="line">    Person(<span class="keyword">const</span> Person&amp; person) = <span class="keyword">delete</span>;</span><br><span class="line">    Person&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Person&amp; person) = <span class="keyword">delete</span>;</span><br><span class="line">    Person(Person&amp;&amp; person) = <span class="keyword">delete</span>;</span><br><span class="line">    ~Person() = <span class="keyword">default</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; <span class="title">getName</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> mName; &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> mName;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">Person <span class="title">p</span><span class="params">(<span class="string">"yeonon"</span>)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Person <span class="title">p2</span><span class="params">(p)</span></span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p2.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    Person p3;</span><br><span class="line">    p3 = p;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p3.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    Person p4 = <span class="built_in">std</span>::<span class="built_in">move</span>(p);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; p4.getName() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个demo是会编译失败的，编译器会有类似<code>error: use of deleted function ‘Person::Person(const Person&amp;)’</code>的提示。这就是delete的作用，主要主要是防止编译器自动合成默认实现版本，因为有些类的实现者并不想类用户使用这些函数，无论是否是默认的实现。</p>
+<h2 id="final和override"><a href="#final和override" class="headerlink" title="final和override"></a>final和override</h2><p>final关键字在Java里很早就有了，C++直到C++11才开始支持，C++里的final和Java里的作用是差不多的，<strong>核心目的就是禁止子类重载父类的虚成员函数</strong>。直接来看例子，仍然是Person类：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="comment">//.....</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">handleName</span><span class="params">()</span> <span class="keyword">final</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Person:"</span> + mName &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span>; </span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> mName;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span> :</span> <span class="keyword">public</span> Person &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handleName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Student override handleName()"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;  <span class="comment">//error</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> <span class="keyword">override</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>如上，虚函数handleName被final修饰，子类Student打算重载handleName，此时将会编译报错。同时，上面也写了override的示例，便一起介绍了，override的作用就是告诉编译器这是一个重载的函数，编译器可以据此来检查是否是真的在重载父类函数（这很奇怪，但也合理），另一个作用就是提醒读者这是一个重载函数，提高代码可阅读性。</p>
+<h2 id="constexpr"><a href="#constexpr" class="headerlink" title="constexpr"></a>constexpr</h2><p>constexpr和const是不一样的，仅仅是名字沾边，实际作用却大相径庭。简单来说，const修饰变量时表示该变量一旦经过初始化，就不可被更改，强调其“只读”的属性，修饰非静态成员函数时表示该成员函数内部不会存在修改成员变量的代码。而constexpr的作用是要求编译器在编译期运算出一个结果，强调其“常量”的属性，进而给到被修饰的变量或者函数，函数既可以修饰成员函数，也可以修饰非成员函数，几乎没有限制。其最大的作用就是“编译器运算”，从而减少运行时耗时。其他一些用处，比如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">int</span> N&gt; <span class="class"><span class="keyword">class</span> <span class="title">C</span>&#123;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">int</span> <span class="title">FivePlus</span><span class="params">(<span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">5</span> + x;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">  C&lt;x&gt; c1;            <span class="comment">// Error: x is not compile-time evaluable.</span></span><br><span class="line">  C&lt;FivePlus(<span class="number">6</span>)&gt; c2;  <span class="comment">// OK</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这是从网上找到的一个比较好的demo</p>
+</blockquote>
+<p>代码中的f函数的参数x虽然被const修饰了，但其实在编译期间是不可知的，所以第8行会报错。然后同样是函数调用，FivePlus的调用就可以作为模板参数。因为FivePlus函数是被constexpr修饰，编译器会在编译期将结果计算出来。</p>
+<p>另外还有一个常见的例子，就是数组的定义，在C++的标准中，数组的size必须要在声明时给出，而且size必须是一个常量。假设上述代码中f函数里定义了一个数组，x作为size的化，在标准的C++编译器里将会编译报错。但如果用GCC/Clang编译将不会有问题，原因是这些编译器偷偷实现了“variable length array”的特性。可以在编译时加上-pedantic选项来看看编译器的提示，这里就不说了丷。</p>
+<p>另一个作用就是，在实践中，constexpr可以替代大部分的宏（有些和软件版本相关的宏依然无法代替），更接近我们理解的“常量”。</p>
+<p>constexpr还有很多这里我们提到的用法以及限制，限于篇幅，就不再往下深入了，建议参考Cpprefrence网站里的介绍。</p>
+<h2 id="nullptr"><a href="#nullptr" class="headerlink" title="nullptr"></a>nullptr</h2><p>根据定义，nullptr的类型是std::nulptr_t，而NULL大多数时候被认为是0，即<code>#define NULL 0</code>。在大部分场景中，nullptr和NULL是等价的，都可以用来表示空指针，但如果待判断的类型是int，那么就可能会产生一些歧义。所以，C++11才搞出一个新的类型来表示空指针。除此之外，还有在模板的场景，NULL和nullptr的表现就不一样了，例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; &#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">void</span>*)</span> </span>&#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"void*"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(T t)</span> </span>&#123; bar(t); &#125;</span><br><span class="line"></span><br><span class="line">foo(<span class="literal">NULL</span>);</span><br><span class="line">foo(<span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+
+<p>上述代码会分别输出int和void*，原因就是NULL被定义成0，而nullptr的类型是std::nullptr_t。</p>
+<h2 id="noexcept"><a href="#noexcept" class="headerlink" title="noexcept"></a>noexcept</h2><p>noexcept的出现是为了替代throw的，noexcept的含义有两个：</p>
+<ol>
+<li>表明一个函数是否抛出异常，语法是：<code>noexpect(表达式)</code>，例如noexpect(true)则表示不会抛出异常，noexpect(false)则会抛出异常，特别地，noexpect和noexpect(true)等价。</li>
+<li>在编译时进行检测，若括号里的表达式为不抛出异常，则返回true，否则返回false</li>
+</ol>
+<p>noexcept的另一个作用就是阻止异常传播，如果一个函数声明为noexpect(true)，则一旦函数内部发生了异常，程序会立即终止，即使在外部使用try-catch也无法阻止。这个作用可好可坏，比较难使用。</p>
+<p>noexcept的好处在于取代throw，在编译时进行检查，防止编译器添加一些防御异常的代码，提供些许性能。但还是建议在业务代码中少用，因为业务代码经常修改，也许刚定义的时候，函数还很容易判断是否会抛出异常，但随着业务的变化，会很难作出正确的判断，反而会增加程序员负担。而且如上所说在一个成熟的代码框架中如果使用了noexcept，可能会导致程序在某些本不该终止的情况下终止。</p>
+<p>建议只在这些特殊场景使用noexcept:</p>
+<ol>
+<li>dtor中，因为如果dtor发生了异常，即使程序能继续进行下去，肯定也会出现问题，而且更难定位，还不如直接在这里crash。</li>
+<li>移动构造和移动赋值函数，因为如果这俩函数发生了异常，移动语义就失效了（而且移动语义本身也不应该发生异常）。</li>
+</ol>
+<h2 id="alignof和alignas"><a href="#alignof和alignas" class="headerlink" title="alignof和alignas"></a>alignof和alignas</h2><p>alignof的作用是返回一个类型的对齐位数，alignas可以在类型定义时用于指定类型的对齐位数。和#pragma pack(n)作用一样，但#pragma pack(n)需要注意在合适的地方再设置一次为默认对齐数。看个例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Foo</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> i;   <span class="comment">//4</span></span><br><span class="line">    <span class="keyword">float</span> f; <span class="comment">//4</span></span><br><span class="line">    <span class="keyword">char</span> c;  <span class="comment">//1</span></span><br><span class="line">    <span class="comment">//4 + (+0) + 4 + (+3) + 1 = 12</span></span><br><span class="line">    </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">struct <span class="title">alignas</span><span class="params">(<span class="number">8</span>)</span> Foo2 </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;   <span class="comment">//4 </span></span><br><span class="line">    <span class="keyword">float</span> f; <span class="comment">//4</span></span><br><span class="line">    <span class="keyword">char</span> c;  <span class="comment">//1</span></span><br><span class="line">    <span class="comment">//4 + (+4) + 4 + (+3) + 1 = 16</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(Foo) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="keyword">alignof</span>(Foo) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(Foo2) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="keyword">alignof</span>(Foo2) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述例子中，sizeof(Foo)返回12（默认4位对齐），sizeof(Foo2)返回16，8位对齐。至于内存对齐的计算方式，在这里就不说了。</p>
+<h2 id="long-long，char16-t-char32-t"><a href="#long-long，char16-t-char32-t" class="headerlink" title="long long，char16_t, char32_t"></a>long long，char16_t, char32_t</h2><p>C++11新增了三个数据类型，long long的size是64位，char16_t表示16位的字符类型,char32_t表示32位字符类型，可以表示一些特殊字符，8位的char类型只能表示ASCII中的128个字符。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>C++11新增的关键字大概就这些了，大多数关键字还是很有用的，例如auto，final，constexpr等等，建议在编译器版本支持的情况下多多使用，而有些关键字，例如noexpect，由于比较难用，且对代码的正确性不会产生影响，建议只在一些特殊场景下使用。下文开始介绍移动语义相关的内容。</p>
+<h2 id="完成情况"><a href="#完成情况" class="headerlink" title="完成情况"></a>完成情况</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> auto and decltype</li>
+<li><input checked="" disabled="" type="checkbox"> defaulted and deleted functions</li>
+<li><input checked="" disabled="" type="checkbox"> final and override</li>
+<li><input disabled="" type="checkbox"> trailing return type</li>
+<li><input disabled="" type="checkbox"> rvalue references</li>
+<li><input disabled="" type="checkbox"> move constructors and move assignment operators</li>
+<li><input disabled="" type="checkbox"> scoped enums</li>
+<li><input checked="" disabled="" type="checkbox"> constexpr and literal types</li>
+<li><input disabled="" type="checkbox"> list initialization</li>
+<li><input disabled="" type="checkbox"> delegating and inherited constructors</li>
+<li><input disabled="" type="checkbox"> brace-or-equal initializers</li>
+<li><input checked="" disabled="" type="checkbox"> nullptr</li>
+<li><input checked="" disabled="" type="checkbox"> long long</li>
+<li><input checked="" disabled="" type="checkbox"> char16_t and char32_t</li>
+<li><input disabled="" type="checkbox"> type aliases</li>
+<li><input disabled="" type="checkbox"> variadic templates</li>
+<li><input disabled="" type="checkbox"> generalized (non-trivial) unions</li>
+<li><input disabled="" type="checkbox"> generalized PODs (trivial types and standard-layout types)</li>
+<li><input disabled="" type="checkbox"> Unicode string literals</li>
+<li><input disabled="" type="checkbox"> user-defined literals</li>
+<li><input disabled="" type="checkbox"> attributes</li>
+<li><input disabled="" type="checkbox"> lambda expressions</li>
+<li><input checked="" disabled="" type="checkbox"> noexcept specifier and noexcept operator</li>
+<li><input checked="" disabled="" type="checkbox"> alignof and alignas</li>
+<li><input disabled="" type="checkbox"> multithreaded memory model</li>
+<li><input disabled="" type="checkbox"> thread-local storage</li>
+<li><input disabled="" type="checkbox"> GC interface</li>
+<li><input disabled="" type="checkbox"> range-for (based on a Boost library)</li>
+<li><input disabled="" type="checkbox"> static_assert (based on a Boost library)</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
