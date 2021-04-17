@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++11 lambda表达式
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>lambda表达式是函数是编程中的一个概念，如果有同学阅读过《计算机程序的构造与解释》一书，相信对lambda表达式一定不会陌生，这本书使用Lisp编写示例程序，而Lisp语言只能写出lambda表达式，是纯函数式计算机语言。在其他语言中也有对lambda表达式的支持，例如Java(JDK1.8之后)，Python，Js等，还有本系列文章主要介绍的C++。</p>
+<p>C++ 11中引入了lambda表达式，官方的定义是：</p>
+<blockquote>
+<p>Constructs a <a href="https://en.wikipedia.org/wiki/Closure_(computer_science)" target="_blank" rel="noopener">closure</a>: an unnamed function object capable of capturing variables in scope.</p>
+</blockquote>
+<p>即构造一个“闭包”，“闭包”在这里的意义不是数学上的那个意义，而是指<strong>一个可以捕获其所在作用域的变量的匿名函数对象</strong>。（关于数学上的定义，请参考<a href="[https://zh.wikipedia.org/wiki/%E9%97%AD%E5%8C%85_(%E6%95%B0%E5%AD%A6)](https://zh.wikipedia.org/wiki/闭包_(数学))">闭包 (数学)</a>）</p>
+<h2 id="lambda表达式的语法"><a href="#lambda表达式的语法" class="headerlink" title="lambda表达式的语法"></a>lambda表达式的语法</h2><p>C++11中有两种(C++20和C++23扩充了语法)：</p>
+<ol>
+<li>[捕获的参数列表] (参数) 尾置返回类型 {函数体}</li>
+<li>[捕获的参数列表] (参数) {函数体}</li>
+</ol>
+<p>关于”尾置返回类型”，本文后面会介绍。其中“捕获的参数列表”指的是该函数体能可以直接使用的参数集合，而“参数”即函数参数，函数体则函数主要的逻辑部分。下面是一个简单的lambda表达式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//这里的实现逻辑先暂时不用太关心，functional也是C++ 11中的新特性，后续会介绍</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function, <span class="keyword">typename</span> ...Args&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">callFunc</span><span class="params">(<span class="keyword">const</span> Function&amp; f, <span class="keyword">const</span> Args&amp;... args)</span> </span></span><br><span class="line">    -&gt; typename std::result_of&lt;Function(Args...)&gt;::type</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> f(args...);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">20</span>;</span><br><span class="line">	<span class="comment">//这里定义了一个lambda表达式，并作为对象传入callFunc</span></span><br><span class="line">    <span class="keyword">auto</span> ret = callFunc([a, b](<span class="keyword">int</span> c) &#123;</span><br><span class="line">        <span class="keyword">return</span> a + b + c;</span><br><span class="line">    &#125;, <span class="number">100</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; ret &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    func();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="捕获的参数列表"><a href="#捕获的参数列表" class="headerlink" title="捕获的参数列表"></a>捕获的参数列表</h3><p>上面的demo中，lambda表达式的定义在第18行，[]里面的就是要捕获的参数列表，捕获的参数列表有多种写法，分别是（以下假设a,b是变量名）：</p>
+<ul>
+<li>空，即不捕获任何外部参数。</li>
+<li>=，捕获所有外部一层作用域的变量（包括this），按值传递。</li>
+<li>&amp;，捕获所有外部一层作用域的变量（包括this），按引用传递。</li>
+<li>a, 指定捕获某个变量，按值传递。</li>
+<li>&amp;a, 指定捕获某个变量，按引用传递。</li>
+<li>=, &amp;a,&amp;b，指定捕获a，b变量按引用传递，其余变量按值传递。</li>
+<li>&amp;,a,b，指定捕获a,b变量按值传递，其余变量按引用传递。</li>
+</ul>
+<h3 id="尾置返回类型"><a href="#尾置返回类型" class="headerlink" title="尾置返回类型"></a>尾置返回类型</h3><p>其实lambda表达式如果不写返回类型，且函数体内部或者作为参数传递给其他函数且该形参的function对象声明了返回类型，那么lambda表达式会自动推断返回类型，当然能写出返回类型那更好。</p>
+<p>lambda表达式使用尾置返回类型的语法表示其返回类型，尾置返回类型也是C++11的新特性，目的是简化编写复杂返回类型（吐槽一下，其实个人觉得也没怎么简化）。</p>
+<p>语法就是在函数声明的末尾，函数体之前并以-&gt;符号开始，并且需要在传统函数写返回类型的地方使用auto替代，上面的示例程序中callFunc就使用了尾置返回类型。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function, <span class="keyword">typename</span> ...Args&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">callFunc</span><span class="params">(<span class="keyword">const</span> Function&amp; f, <span class="keyword">const</span> Args&amp;... args)</span> </span></span><br><span class="line">    -&gt; typename std::result_of&lt;Function(Args...)&gt;::type</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> f(args...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里其实不用尾置返回类型也没什么太大区别，可以按传统方法写:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function, <span class="keyword">typename</span> ...Args&gt;</span><br><span class="line"><span class="keyword">typename</span> <span class="built_in">std</span>::result_of&lt;Function(Args...)&gt;::type</span><br><span class="line">callFunc(<span class="keyword">const</span> Function&amp; f, <span class="keyword">const</span> Args&amp;... args) </span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> f(args...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果是一样的。</p>
+<p>回到示例程序中的18行，如果要写明返回类型，该如何修改？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> ret = callFunc([a, b](<span class="keyword">int</span> c) -&gt; <span class="keyword">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> a + b + c;</span><br><span class="line">&#125;, <span class="number">100</span>);</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; ret &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
+
+<p>是的，是需要在声明式最后加上-&gt; int即可。</p>
+<h2 id="lambda表达式的作用"><a href="#lambda表达式的作用" class="headerlink" title="lambda表达式的作用"></a>lambda表达式的作用</h2><p>上面介绍了lambda表达式的语法，那么lambda表达式的作用是什么呢？为什么要引入这个东西？</p>
+<p>个人认为lambda表达式一个作用就是利用其“匿名”的特性，考虑这样一个场景：假设现在我们要编写一段逻辑来处理一些数据而且只是一次性的，传统的思路是编写一个新的函数，然后调用他。但仔细思考一下，我们真的需要编写一个新的函数来作这件事吗？这段逻辑只调用了一次，新写一个函数似乎有点小题大作了，lambda表达式就可以解决这个问题，因为他是“匿名”的，不需要为他专门想一个名字，反正就是作这个一次性的处理而已，并不打算复用他或者在外部调用他。</p>
+<p>另一个作用就是利用lambda表达式本身是一个对象的特性，既然是对象，那么就可以作为函数参数，返回值以及模板函数参数来使用。</p>
+<h3 id="作为函数参数"><a href="#作为函数参数" class="headerlink" title="作为函数参数"></a>作为函数参数</h3><p>例如标准库里sort函数的第3个参数就是一个comparor，我们可以传入一个lambda表达式来自定义vector里的元素比较逻辑：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v = &#123;<span class="number">1</span>,<span class="number">3</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">sort(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), [](<span class="keyword">const</span> <span class="keyword">int</span>&amp; lhs, <span class="keyword">const</span> <span class="keyword">int</span>&amp; rhs) &#123; </span><br><span class="line">    <span class="keyword">return</span> lhs &gt; rhs; </span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">//for_each的第3个参数也接受一个lambda表达式</span></span><br><span class="line"><span class="built_in">std</span>::for_each(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), [](<span class="keyword">const</span> <span class="keyword">int</span> &amp;item) &#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">" "</span>; &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="作为返回值"><a href="#作为返回值" class="headerlink" title="作为返回值"></a>作为返回值</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">std</span>::function&lt;<span class="title">int</span> <span class="params">(<span class="keyword">int</span>)</span>&gt; <span class="title">returnFunc</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> [](<span class="keyword">int</span>) -&gt; <span class="keyword">int</span> &#123; <span class="keyword">return</span> <span class="number">42</span>; &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个例子引出了std::function，实际上，本文最开始的那个callFunc模板函数在调用时，第一个参数也会被推断成std::function。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>本文简单介绍了lambda表达式的语法以及基本作用，lambda表达式是C++11中很重要的一个新特性，引入了函数式编程的概念，丰富了使用C++编程的方式，使得C++更加的amazing了。正文的最后提到了std::function，这也是C++11函数式编程领域中非常重要的东西，我在在下一篇文章介绍std::function以及functional包里的新特性。</p>
+<h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> auto and decltype</li>
+<li><input checked="" disabled="" type="checkbox"> defaulted and deleted functions</li>
+<li><input checked="" disabled="" type="checkbox"> final and override</li>
+<li><input checked="" disabled="" type="checkbox"> trailing return type</li>
+<li><input checked="" disabled="" type="checkbox"> rvalue references</li>
+<li><input checked="" disabled="" type="checkbox"> move constructors and move assignment operators</li>
+<li><input disabled="" type="checkbox"> scoped enums</li>
+<li><input checked="" disabled="" type="checkbox"> constexpr and literal types</li>
+<li><input disabled="" type="checkbox"> list initialization</li>
+<li><input disabled="" type="checkbox"> delegating and inherited constructors</li>
+<li><input disabled="" type="checkbox"> brace-or-equal initializers</li>
+<li><input checked="" disabled="" type="checkbox"> nullptr</li>
+<li><input checked="" disabled="" type="checkbox"> long long</li>
+<li><input checked="" disabled="" type="checkbox"> char16_t and char32_t</li>
+<li><input disabled="" type="checkbox"> type aliases</li>
+<li><input disabled="" type="checkbox"> variadic templates</li>
+<li><input disabled="" type="checkbox"> generalized (non-trivial) unions</li>
+<li><input disabled="" type="checkbox"> generalized PODs (trivial types and standard-layout types)</li>
+<li><input disabled="" type="checkbox"> Unicode string literals</li>
+<li><input disabled="" type="checkbox"> user-defined literals</li>
+<li><input disabled="" type="checkbox"> attributes</li>
+<li><input checked="" disabled="" type="checkbox"> lambda expressions</li>
+<li><input checked="" disabled="" type="checkbox"> noexcept specifier and noexcept operator</li>
+<li><input checked="" disabled="" type="checkbox"> alignof and alignas</li>
+<li><input disabled="" type="checkbox"> multithreaded memory model</li>
+<li><input disabled="" type="checkbox"> thread-local storage</li>
+<li><input disabled="" type="checkbox"> GC interface</li>
+<li><input disabled="" type="checkbox"> range-for (based on a Boost library)</li>
+<li><input disabled="" type="checkbox"> static_assert (based on a Boost library)</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
