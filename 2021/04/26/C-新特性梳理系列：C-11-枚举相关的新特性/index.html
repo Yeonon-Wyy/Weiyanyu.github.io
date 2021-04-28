@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++11 枚举相关的新特性
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>枚举，相信大家都很熟悉，其概念也非常简单，说白就是一堆整型常量的集合。例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> Color &#123;</span><br><span class="line">    WHITE,</span><br><span class="line">    RED = <span class="number">10</span>,</span><br><span class="line">    BLUE, <span class="comment">//C++11之后，这里可以在最后一个枚举后面写上逗号分割</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Color::WHITE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;     <span class="comment">//0</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Color::RED &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;       <span class="comment">//10</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Color::BLUE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;      <span class="comment">//11</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>就是把具有相同性质的常量合并到一个大类里，使得代码更加容易维护和阅读。</p>
+<p>C++11里有不少枚举相关的新特性，这里大致列举一下，下文将逐个介绍：</p>
+<ul>
+<li>可结合C++11新增的attributes特性，给该枚举类型赋予属性。</li>
+<li>可指定枚举元素的类型为可以转换为整型的其他基础类型，例如long, short甚至char等。</li>
+<li>scoped enum，可以将枚举限制在声明的作用域内，可以防止名称污染，更安全的使用枚举。</li>
+</ul>
+<h2 id="结合C-11的attributes给枚举赋予属性"><a href="#结合C-11的attributes给枚举赋予属性" class="headerlink" title="结合C++11的attributes给枚举赋予属性"></a>结合C++11的attributes给枚举赋予属性</h2><p>C++11新增了attributes的特性，关于attributes，我会在后续的文章中详细介绍，这里只简单介绍和枚举的组合使用。</p>
+<p>其语法是这样的：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span>-key attr <span class="keyword">enum</span>-name &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>举个例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> [[deprecated]] Color &#123;</span><br><span class="line">    WHITE,</span><br><span class="line">    RED,</span><br><span class="line">    BLUE, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意，[[deprecated]]是C++14才开始支持的，放在这里是因为标准的attibute中就只有deprecated作用在enum上能起到作用。</p>
+</blockquote>
+<p>代码中Color被赋予了deprecated属性，即“被废弃的”，这就是在告诉编译器这个枚举里在未来的版本里可能要被删除，已经不建议使用，编译器可以选择发出警告，进而提醒开发者。</p>
+<h2 id="可指定枚举元素的类型"><a href="#可指定枚举元素的类型" class="headerlink" title="可指定枚举元素的类型"></a>可指定枚举元素的类型</h2><p>首先明确枚举元素的类型必须是整型，这里所谓的“可指定枚举元素的类型”也必须是可以隐式转换成整型的类型，例如long，short甚至char等。</p>
+<p>其语法是这样的:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span>-key <span class="keyword">enum</span>-name : <span class="keyword">enum</span>-base &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>举个例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Color : short &#123;</span><br><span class="line">    WHITE,</span><br><span class="line">    RED,</span><br><span class="line">    BLUE, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(Color::WHITE) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(Color::RED) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(Color::BLUE) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在我的机器上(64位)，sizeof(Color::WHITE)是2，即short所占字节。个位可以使用其他类型尝试一下，char类型也可以，甚至可以直接指定枚举的值是某个字符。例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Color : <span class="keyword">char</span> &#123;</span><br><span class="line">    WHITE = <span class="string">'w'</span>,</span><br><span class="line">    RED = <span class="string">'r'</span>,</span><br><span class="line">    BLUE = <span class="string">'b'</span>, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>那么这个特性有什么作用呢？其实也比较简单，一方面是可以略微省点内存，例如我们知道某个枚举类型的元素的值不会超过255，那么就可以指定char类型，拿Color枚举来说，这里定义了3个元素，WHITE，RED和BLUE，如果按照默认定义，即int类型，那么一共需要存储4+4+4=12字写来存储这3个元素，但如果指定char类型，只需要1+1+1=3个字节存储，提升了3倍！！</p>
+<p>另一方面则是枚举太多的时候，可以防止溢出。当然int在绝大多数情况下是适用的，但不排除溢出的可能（工作中遇到过这个问题）。</p>
+<h2 id="scoped-enum"><a href="#scoped-enum" class="headerlink" title="scoped enum"></a>scoped enum</h2><p>在C++11之前，枚举定义存在一个问题，即名称污染，即枚举元素里的元素名称对于{}外部是可见的，例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> Color : <span class="keyword">unsigned</span> <span class="keyword">char</span> &#123;</span><br><span class="line">    WHITE,</span><br><span class="line">    RED,</span><br><span class="line">    BLUE, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> WHITE = <span class="number">100</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; WHITE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Color::WHITE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>思考一下这里会输出什么？没错，先输出100，然后输出0。这里的名称被覆盖了！如果没有第14行，这俩输出将是一样的0。C++11的scoped enum解决了这个问题。</p>
+<p>其语法是:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span>|<span class="title">struct</span> <span class="title">attr</span>(<span class="title">optional</span>) <span class="title">enum</span>-<span class="title">name</span> :</span> <span class="keyword">enum</span>-base(optional) &#123; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>举个例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">Color</span>&#123;</span></span><br><span class="line">    WHITE,</span><br><span class="line">    RED,</span><br><span class="line">    BLUE, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; WHITE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; <span class="comment">//报错</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; Color::WHITE &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; <span class="comment">//这里也会报错</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个例子中，两个输出语句都会报错。为什么？第一个输出语句报错的原因是“未定义WHITE”，即此时WHITE这个名称在main函数里是不可见的，而第二行报错的原因是没有重载ostream&lt;&lt;，即没有适配Color这个类型的。此时可以看出，使用enum class来定义枚举，枚举的地位已经上升到和类一样了，此时Color才算是一个完整的类型。</p>
+<p>除了能防止名称污染的，scoped enum还可以防止老式枚举发生隐式类型转换引发的问题，例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Color&#123;</span><br><span class="line">    WHITE,</span><br><span class="line">    RED,</span><br><span class="line">    BLUE, <span class="comment">//after c++11, can write last ,</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(<span class="keyword">double</span> d)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//use double d do something</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    func(Color::WHITE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里是调用是合法的，因为Color::WHITE就是一个int类型，可以转换成double。但如果使用enum class定义的话，是不合法的，因为enum class定义了Color是一个类型，此时传递Color::WHITE将会被认为是Color类型，而Color类型无法隐式转换成double类型。编译器会发出类似如下报错：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">enum.cpp: In function ‘int main()’:</span><br><span class="line">enum.cpp:37:17: error: cannot convert ‘Color’ to ‘double’</span><br><span class="line">   37 |     func(Color::BLUE);</span><br><span class="line">      |          ~~~~~~~^~~~</span><br><span class="line">      |                 |</span><br><span class="line">      |                 Color</span><br><span class="line">enum.cpp:31:18: note:   initializing argument 1 of ‘void func(double)’</span><br><span class="line">   31 | void func(double d) &#123;</span><br><span class="line">      |           ~~~~~~~^</span><br></pre></td></tr></table></figure>
+
+<p>所以scoped enum是类型安全的。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文介绍了C++11中关于枚举的新特性，这些新特性的重点是“类型安全”，例如赋予enum属性，属性就是用来给编译器添加一些附加说明的，枚举可结合属性来使得枚举可以更安全的被使用，指定元素类型可以防止枚举溢出，scoped enum则是更加明确来保护”类型安全“。这些新特性几乎没有副作用（当然和老代码兼容可能会存在一定阻力），提倡新代码多多使用这些新特性。</p>
+<h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><h2 id=""><a href="#" class="headerlink" title=""></a></h2><ul>
+<li><input checked="" disabled="" type="checkbox"> auto and decltype</li>
+<li><input checked="" disabled="" type="checkbox"> defaulted and deleted functions</li>
+<li><input checked="" disabled="" type="checkbox"> final and override</li>
+<li><input checked="" disabled="" type="checkbox"> trailing return type</li>
+<li><input checked="" disabled="" type="checkbox"> rvalue references</li>
+<li><input checked="" disabled="" type="checkbox"> move constructors and move assignment operators</li>
+<li><input checked="" disabled="" type="checkbox"> scoped enums</li>
+<li><input checked="" disabled="" type="checkbox"> constexpr and literal types</li>
+<li><input disabled="" type="checkbox"> list initialization</li>
+<li><input disabled="" type="checkbox"> delegating and inherited constructors</li>
+<li><input disabled="" type="checkbox"> brace-or-equal initializers</li>
+<li><input checked="" disabled="" type="checkbox"> nullptr</li>
+<li><input checked="" disabled="" type="checkbox"> long long</li>
+<li><input checked="" disabled="" type="checkbox"> char16_t and char32_t</li>
+<li><input disabled="" type="checkbox"> type aliases</li>
+<li><input disabled="" type="checkbox"> variadic templates</li>
+<li><input disabled="" type="checkbox"> generalized (non-trivial) unions</li>
+<li><input disabled="" type="checkbox"> generalized PODs (trivial types and standard-layout types)</li>
+<li><input disabled="" type="checkbox"> Unicode string literals</li>
+<li><input disabled="" type="checkbox"> user-defined literals</li>
+<li><input disabled="" type="checkbox"> attributes</li>
+<li><input checked="" disabled="" type="checkbox"> lambda expressions</li>
+<li><input checked="" disabled="" type="checkbox"> noexcept specifier and noexcept operator</li>
+<li><input checked="" disabled="" type="checkbox"> alignof and alignas</li>
+<li><input disabled="" type="checkbox"> multithreaded memory model</li>
+<li><input disabled="" type="checkbox"> thread-local storage</li>
+<li><input disabled="" type="checkbox"> GC interface</li>
+<li><input disabled="" type="checkbox"> range-for (based on a Boost library)</li>
+<li><input disabled="" type="checkbox"> static_assert (based on a Boost library)</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
