@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++11 attributes
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>attributes即属性，属性并不是C++11新增的特性，在C++11之前包括C语言就存在了。属性是一种和编译器相关性很高的特性，一种语言扩展。使用属性可以使用编译器实现了的一些功能，或者在代码中给予编译器一些提示目前这些属性有标准属性和非标准属性两种，没有途径自定义属性（其实很容易理解，这是和编译器相关的，自定义也没什么意义）。</p>
+<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><p>C++11之前要使用属性的话，只能使用编译器宏<code>__attribute__</code></p>
+<p>例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">A</span> &#123;</span></span><br><span class="line">    short a;</span><br><span class="line">&#125; __attribute__((aligned(<span class="number">8</span>)));</span><br></pre></td></tr></table></figure>
+
+<p>即表示这个结构体A使用8位对齐。更多的属性可以查看<a href="https://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html" target="_blank" rel="noopener">GNU GCC文档</a></p>
+<p>C++11之后则可以使用更简单的语法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[attr-<span class="built_in">list</span>]]</span><br></pre></td></tr></table></figure>
+
+<p>​    artt-list是属性列表，多个属性之间用逗号(,)分割，而attr即属性，属性可以有如下几种写法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">identifier</span><br><span class="line">arrt-<span class="keyword">namespace</span>::identifier</span><br><span class="line">identifier(agrs)</span><br><span class="line">attr-<span class="keyword">namespace</span>::identifier(args)</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[[noreturn]]</span><br><span class="line">[[gnu::always_inline]]</span><br><span class="line">[[deprecated(<span class="string">"Not recommended"</span>)]]</span><br><span class="line">[[gnu::gnu::aligned(<span class="number">16</span>)]]</span><br></pre></td></tr></table></figure>
+
+<p>属性可以写在C++代码中任何一个位置，没有什么限制。但针对某一个特定的属性，写在某个地方不一定能生效。例如上一篇文章中提到的枚举结合属性时，对于枚举来说，目前只有deprecated属性是可以生效的，又例如noreturn属性也只会对函数生效，并且有些结构需要把属性写在特定的位置，例如struct和enum等，都有自己独特的语法规则。</p>
+<blockquote>
+<p>吐槽一下，这是C++这门语言的一个风格，他不会规定你要如何写代码，反而最大程度上允许你随意写代码，但不保证正确有效，很多时候需要开发者自己来把握这个事，而不像Java这种语言，你只要按照语言规范写代码，一般不会出现什么问题，当然这里的“问题”不是指业务逻辑问题，业务逻辑本身就应该是开发者自己把控的，无论什么语言都一样。</p>
+</blockquote>
+<h2 id="简单使用"><a href="#简单使用" class="headerlink" title="简单使用"></a>简单使用</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">[[noreturn]]</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//使用noreturn属性，编译器编译时会发出警告，该函数是no return的</span></span><br><span class="line"></span><br><span class="line">[[deprecated(<span class="string">"Not recommended"</span>)]]</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">func2</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//使用deprecated来标记该函数是deprecated的，不建议再使用</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> [[<span class="title">gnu</span>:</span>:aligned(<span class="number">16</span>)]] A &#123;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//aligned指定对齐位数，这里是指定16位对齐，struct的属性有独特的写法</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cin</span> &gt;&gt; a;</span><br><span class="line">    <span class="keyword">switch</span> (a) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"1"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        [[fallthrough]]</span><br><span class="line">    <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"2"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//这里switch case中case 1没有使用break，编译器可能不会报警，而加上fallthrough属性之后，编译器一定会报警。</span></span><br><span class="line">    <span class="comment">//fallthrough的意义就是表明这里这样写是故意的，可以提醒其他开发者看到这段代码的时候最好不要“自作聪明”的加上break。</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述几个例子的作用和意义我都写在代码注释里了，这里就不多说了。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>属性是对语言的扩展，可以使用一些编译器实现的而语言规范没有的功能，所以需要编译器的支持，如果编译器不支持，该属性即使使用了也不会生效。总的来说，C++11对使用属性的方法进行了简化，不用在到处使用<code>__attribute__</code>这样的编译器宏。而且有些属性已经添加到C++语言标准里了，跨平台也不会有什么问题。</p>
+<blockquote>
+<p>关于标准属性，可查阅<a href="https://en.cppreference.com/w/cpp/language/attributes" target="_blank" rel="noopener">C++ attributes</a>，关于GNU GCC的attributes，可查阅<a href="https://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html" target="_blank" rel="noopener">GNU GCC</a></p>
+</blockquote>
+<h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> auto and decltype</li>
+<li><input checked="" disabled="" type="checkbox"> defaulted and deleted functions</li>
+<li><input checked="" disabled="" type="checkbox"> final and override</li>
+<li><input checked="" disabled="" type="checkbox"> trailing return type</li>
+<li><input checked="" disabled="" type="checkbox"> rvalue references</li>
+<li><input checked="" disabled="" type="checkbox"> move constructors and move assignment operators</li>
+<li><input checked="" disabled="" type="checkbox"> scoped enums</li>
+<li><input checked="" disabled="" type="checkbox"> constexpr and literal types</li>
+<li><input disabled="" type="checkbox"> list initialization</li>
+<li><input disabled="" type="checkbox"> delegating and inherited constructors</li>
+<li><input disabled="" type="checkbox"> brace-or-equal initializers</li>
+<li><input checked="" disabled="" type="checkbox"> nullptr</li>
+<li><input checked="" disabled="" type="checkbox"> long long</li>
+<li><input checked="" disabled="" type="checkbox"> char16_t and char32_t</li>
+<li><input disabled="" type="checkbox"> type aliases</li>
+<li><input disabled="" type="checkbox"> variadic templates</li>
+<li><input disabled="" type="checkbox"> generalized (non-trivial) unions</li>
+<li><input disabled="" type="checkbox"> generalized PODs (trivial types and standard-layout types)</li>
+<li><input disabled="" type="checkbox"> Unicode string literals</li>
+<li><input disabled="" type="checkbox"> user-defined literals</li>
+<li><input checked="" disabled="" type="checkbox"> attributes</li>
+<li><input checked="" disabled="" type="checkbox"> lambda expressions</li>
+<li><input checked="" disabled="" type="checkbox"> noexcept specifier and noexcept operator</li>
+<li><input checked="" disabled="" type="checkbox"> alignof and alignas</li>
+<li><input disabled="" type="checkbox"> multithreaded memory model</li>
+<li><input disabled="" type="checkbox"> thread-local storage</li>
+<li><input disabled="" type="checkbox"> GC interface</li>
+<li><input disabled="" type="checkbox"> range-for (based on a Boost library)</li>
+<li><input disabled="" type="checkbox"> static_assert (based on a Boost library)</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
