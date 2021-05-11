@@ -221,6 +221,10 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">base.cpp: In instantiation of ‘void checkArgsSize(Args ...) [with Args = &#123;int, int, int, int, int&#125;]’:</span><br><span class="line">base.cpp:180:32:   required from here</span><br><span class="line">base.cpp:165:35: error: static assertion failed: count of args must less than 5</span><br><span class="line">  165 |     static_assert(sizeof...(args) &lt; 5, <span class="string">"count of args must less than 5"</span>);</span><br></pre></td></tr></table></figure>
 
 <p>static_assert的好处就在于编译期就能发现一些问题，而且该调用也不会生成目标代码，所以对性能也有微小贡献把。但并不能完全取代assert，例如单元测试或者一些必须要检查运行时实参的场景，但至少提供了更多的选择。</p>
+<h2 id="GC-interface"><a href="#GC-interface" class="headerlink" title="GC interface"></a>GC interface</h2><p>C++11 标准中中提到了GC Interface，是一组ABI。听起来好像是C++11实现了GC？但实际上，只是提供了标准接口，少有编译器实现了。而且这个东西大概率会破坏很多老代码，导致难以预料的问题。例如有如下老代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *p = <span class="keyword">new</span> <span class="keyword">int</span>;</span><br><span class="line">p += <span class="number">10</span>;</span><br><span class="line"><span class="comment">//这里把指针移动到其他地址，根据GC的定义，这里是有可能触发GC释放刚刚new开辟出来的那块内存的</span></span><br><span class="line">p -= <span class="number">10</span>;</span><br><span class="line"><span class="comment">//这里又把指针移回来了</span></span><br><span class="line">*p = <span class="number">10</span>;</span><br><span class="line"><span class="comment">//如果上面发生了GC，这个操作就是未定义的</span></span><br></pre></td></tr></table></figure>
+
+<p>当然，如果真的实现了GC，上述这种情况也是可以避免的，使用<code>std::declare_reachable(void*);</code>声明那个指针就行，但这对兼容老代码会是一场灾难。估计以后C++也不一定会真的去实现这个东西，因为C++手动内存管理就是C++的一大特点。本文就简单的提一下，如果各位有兴趣，可以参考<a href="https://www.stroustrup.com/C++11FAQ.html#gc-abi" target="_blank" rel="noopener">C++11 FAQ</a>。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文包含的内容比较多且杂，但都属于基础特性的扩展，这部分新扩展的一个核心目标就是：提升基础特性的使用范围，使用体验以及部分性能优化。例如列表初始化统一了初始化方式，提高了union成员变量的适用范围，更加泛化的表述POD，可变模板参数提供了模板的灵活性，range-for语法糖提高了变量容器的使用体验等。</p>
 <p>下篇文章我将介绍function相关的内容，包括std::bind,std::function等。</p>
 <h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><h2 id=""><a href="#" class="headerlink" title=""></a></h2><ul>
@@ -250,7 +254,7 @@
 <li><input checked="" disabled="" type="checkbox"> alignof and alignas</li>
 <li><input disabled="" type="checkbox"> multithreaded memory model</li>
 <li><input disabled="" type="checkbox"> thread-local storage</li>
-<li><input disabled="" type="checkbox"> GC interface</li>
+<li><input checked="" disabled="" type="checkbox"> GC interface</li>
 <li><input checked="" disabled="" type="checkbox"> range-for (based on a Boost library)</li>
 <li><input checked="" disabled="" type="checkbox"> static_assert (based on a Boost library)</li>
 </ul>
