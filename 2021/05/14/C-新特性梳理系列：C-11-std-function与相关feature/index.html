@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C-新特性梳理系列：C-11-std-function与相关feature
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <p>从本文开始，后面的文章将介绍C++11 的Library features。</p>
+<p>本文将重点介绍std::function和std::bind，期间可能会提到其他相关的特性，提到的时候再细说。在正式介绍他们之前，先回想一下在C++11之前，我们如何传递一个函数？答案是通过<strong>函数指针</strong>。</p>
+<blockquote>
+<p>如果各位对于下面关于函数指内容非常熟悉了，可以直接跳过。</p>
+</blockquote>
+<h3 id="函数指针"><a href="#函数指针" class="headerlink" title="函数指针"></a>函数指针</h3><p>函数指针就是指向函数的指针，即本身是一个指针，只是他的内容是一个函数的地址，语法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//正常声明</span></span><br><span class="line"><span class="keyword">return</span>-type (*pointer-name)(param-<span class="built_in">list</span>)</span><br><span class="line">    </span><br><span class="line"><span class="comment">//typedef的时候</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">return</span>-type (*<span class="keyword">new</span>-type-name)(param-<span class="built_in">list</span>)</span><br></pre></td></tr></table></figure>
+
+<p>下面是一个demo:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> i * <span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(*MyFunc)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//1.</span></span><br><span class="line"><span class="keyword">int</span> (*f)(<span class="keyword">int</span>) = func;</span><br><span class="line">f(<span class="number">5</span>);</span><br><span class="line"><span class="comment">//2.</span></span><br><span class="line">MyFunc f = func;</span><br><span class="line">f(<span class="number">5</span>);</span><br></pre></td></tr></table></figure>
+
+<p>既然是一个指针，那么就可以作为函数参数或者保存在类或者结构体中，总之，和普通指针一样。下面是一个传递函数指针的例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">callFunc</span><span class="params">(MyFunc myFunc, <span class="keyword">int</span> param)</span> </span>&#123;</span><br><span class="line">    myFunc(param);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">callFunc(func, <span class="number">5</span>);</span><br></pre></td></tr></table></figure>
+
+<p>例子中callFunc接受一个MyFunc类型的参数，这个参数我们知道其实是一个函数指针的，再调用callFunc的时候，我们可以直接传递func这个函数名字作为实参，再callFunc函数里可以使用func，这就完成了一次传递。</p>
+<p>函数指针大量用在回调以及使用动态库的场景，例如使用dlsym通过符号获取动态库暴露的接口实例，一般就需要用到函数指针了来绑定接口实例，从而调用。需要注意的是，函数指针是类型不安全的，即可以任意被转换成其他类型的指针，所以使用起来得非常小心。</p>
+<h2 id="std-function"><a href="#std-function" class="headerlink" title="std::function"></a>std::function</h2><p>函数指针不仅定义式看起来复杂，使用起来也比较麻烦，普通指针有的问题，函数指针也都有。C++11提供了一种新的方式来封装函数实体，即std::function。std::function是一个类模板，他可以封装所以<strong>可调用对象</strong>，包括普通函数、仿函数、lambda表达式甚至是函数指针等，由于std::function本身也是一个类，所以也具有普通类的特性。其声明如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">R</span>, <span class="title">class</span>... <span class="title">Args</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">function</span>&lt;R(Args...)&gt;;</span></span><br></pre></td></tr></table></figure>
+
+<p>下面是一些使用的例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Functor</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="keyword">double</span> d)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> d * <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">compareInt</span><span class="params">(<span class="keyword">int</span> lhs, <span class="keyword">int</span> rhs)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (lhs == rhs) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (lhs &lt; rhs) <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> i * <span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(*MyFunc)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Test(<span class="keyword">int</span> i)</span><br><span class="line">        :m_i&#123;i&#125; &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">printDouble</span><span class="params">(<span class="keyword">double</span> d)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; d &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> m_i;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//普通函数</span></span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">int</span>(<span class="keyword">int</span>,<span class="keyword">int</span>)&gt; f_compareInt = compareInt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; f_compareInt(<span class="number">5</span>,<span class="number">6</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//仿函数</span></span><br><span class="line">    Functor functor;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">double</span>(<span class="keyword">double</span>)&gt; f_functor = functor;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; f_functor(<span class="number">1.5</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//lambda</span></span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>)&gt; f_printInt = [](<span class="keyword">int</span> num) &#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; num &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; &#125;;</span><br><span class="line">    f_printInt(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//函数指针</span></span><br><span class="line">    MyFunc myFunc = func;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">int</span>(<span class="keyword">int</span>)&gt; f_myFunc = myFunc;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; f_myFunc(<span class="number">4</span>) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//成员函数，注意成员函数的第一个参数实际上是this对象，所以这里的参数列表需要把Test类型加上，同时要传递一个Test对象</span></span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(Test&amp;, <span class="keyword">double</span>)&gt; f_T_printDouble = &amp;Test::printDouble;</span><br><span class="line">    <span class="function">Test <span class="title">t</span><span class="params">(<span class="number">1.4</span>)</span></span>;</span><br><span class="line">    f_T_printDouble(t, <span class="number">4.5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总之，std::function的提供了一种统一的使用可调用对象的方式，可以在大部分场景下替代函数指针。并且由于std::function本身是一个类，所以在基于类架构的体系中，组合使用std::function对象会比使用函数指针更加和谐一些。</p>
+<h2 id="std-bind"><a href="#std-bind" class="headerlink" title="std::bind"></a>std::bind</h2><p>本节将介绍一个经常和std::function搭配使用的工具，std::bind。std::bind是一个模板函数，其声明式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span>... <span class="title">Args</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">function</span>-<span class="title">object</span> <span class="title">bind</span>( <span class="title">F</span>&amp;&amp; <span class="title">f</span>, <span class="title">Args</span>&amp;&amp;... <span class="title">args</span> );</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">R</span>, <span class="title">class</span> <span class="title">F</span>, <span class="title">class</span>... <span class="title">Args</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">function</span>-<span class="title">object</span> <span class="title">bind</span>( <span class="title">F</span>&amp;&amp; <span class="title">f</span>, <span class="title">Args</span>&amp;&amp;... <span class="title">args</span> );</span></span><br></pre></td></tr></table></figure>
+
+<p>std::bind的作用就是将传入的函数与参数绑定起来返回一个新的函数对象。这么说可能有点抽象，下面是一些例子，看了之后就很容易理解了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">nm</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j, <span class="keyword">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="string">" "</span> &lt;&lt; j &lt;&lt; <span class="string">" "</span> &lt;&lt; k &lt;&lt; <span class="string">" "</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//占位符</span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::placeholders::_1;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::placeholders::_2;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::placeholders::_3;</span><br><span class="line"></span><br><span class="line"><span class="comment">// (1)</span></span><br><span class="line"><span class="keyword">auto</span> fnm1 = <span class="built_in">std</span>::bind(nm, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">fnm1();</span><br><span class="line"></span><br><span class="line"><span class="comment">// (2)</span></span><br><span class="line"><span class="keyword">auto</span> fnm2 = <span class="built_in">std</span>::bind(nm, <span class="number">1</span>, <span class="number">2</span>, _1);</span><br><span class="line">fnm2(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// (3)</span></span><br><span class="line"><span class="keyword">auto</span> fnm3 = <span class="built_in">std</span>::bind(nm, _2, <span class="number">2</span>, _1);</span><br><span class="line">fnm3(<span class="number">3</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// (4)</span></span><br><span class="line"><span class="keyword">auto</span> bPrintDouble = <span class="built_in">std</span>::bind(&amp;Test::printDouble, t, _1);</span><br><span class="line">bPrintDouble(<span class="number">1.1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>解释一下上述4个不同的使用方式的意义：</p>
+<ol>
+<li>nm函数有3个参数，std::bind的第一个参数是nm函数，后面的3个参数是实参，std::bind将nm函数和这3个实参绑定起来生成了一个新的函数对象fnm1，这个函数对象实际上就包含了实参信息，这时候nm函数的3个参数已经被固定了，在调用的时候不需要也不能再接受参数了。</li>
+<li>这里使用了<strong>_1</strong>占为符，假设我们还不知道或者不想固定nm函数的参数k，但由于nm函数需要接受3个参数，所以为了能顺利的生成新的函数对象，这里传递一个占位符给std::bind，最终生成的函数对象只固定了原函数nm的i和j参数，对于k参数则是在调用时确定。</li>
+<li>同2，只不过这里使用了两个占位符，占位符的名字是包含了顺序的意义的。例如<code>_1</code>表示第一个参数，<code>_2</code>表示第2个参数。在本里中，形参j被固定了。i的位置占位符是<code>_2</code>，即表示新函数对象的第2个参数将会被传递到原函数nm的i这个位置。j的位置同理。</li>
+<li>bind也可以作用在成员函数，规则和上述几个规则一样，需要注意的是，要记得传递一个类对象。</li>
+</ol>
+<p>各位花点时间去实际写一下代码就能理解了。同时，各位可能会觉得std::bind很神奇，占位符是怎么生效的？这就得深入std::bind的具体实现了，以后有机会我会再写一篇文章介绍一下bind的实现。</p>
+<p>这里再多提一个比较有意思的东西，即<strong>lambda可以模拟bind的功能</strong>。例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> lambda_nm = [](<span class="keyword">int</span> i) &#123; nm(i, <span class="number">2</span>, <span class="number">3</span>); &#125;;</span><br><span class="line">lambda_nm(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其中2,3还可以是利用lambda的参数捕获特性来获取。</p>
+<p>至于使用lambda还是使用bind，网上有很多对比的文章，主流的观点就是尽量使用lambda，因为std::bind生成的可调用对象类型也是一个普通的类，很难进行优化，以及占位符的上限是20个，很难进行扩展。而我个人的想法是，其实所谓的编译优化对整体的性能并没有很大提升，性能的优化应该优先去优化性能消耗大头，而不是纠结这点编译优化，std::bind还是比lambda简单一些的，调用个函数就完事了，我会在需要的场景优先选择std::bind。</p>
+<p>std::bind在回调的时候也非常有用，假设现在有如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResultProcessor</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCallback</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>, <span class="keyword">int</span>)&gt;&amp; callback)</span> </span>&#123;</span><br><span class="line">        m_callback = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">doProcess</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//do something</span></span><br><span class="line">        <span class="keyword">int</span> res = i * <span class="number">100</span>;</span><br><span class="line">        <span class="keyword">int</span> status = <span class="number">0</span>; <span class="comment">//mean OK</span></span><br><span class="line">        m_callback(res, status);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(<span class="keyword">int</span>, <span class="keyword">int</span>)&gt; m_callback;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">callback1</span><span class="params">(<span class="keyword">int</span> res, <span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"callback1 : "</span> &lt;&lt; res &lt;&lt; <span class="string">" status : "</span> &lt;&lt; status &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ResultProcessor rp;</span><br><span class="line">rp.setCallback(callback1);</span><br><span class="line">rp.doProcess(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+
+<p>代码很简单，就是设置callback，调用doProcess的时候要触发callback函数。现在考虑一个场景，如果我想使用另一个callback函数，例如有新的callback函数:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">callback2</span><span class="params">(<span class="keyword">int</span> res, <span class="keyword">int</span> status, <span class="keyword">double</span> whatever)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"callback2 : "</span> &lt;&lt; res &lt;&lt; <span class="string">" status : "</span> &lt;&lt; status &lt;&lt; <span class="string">" and "</span> &lt;&lt; whatever &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并且其实第三个参数对我们的ResultProcessor来说并不是很重要，如何修改代码使得ResultProcessor可以使用这个callback2呢？一种直接的方法是修改ResultProcessor的m_callback成员的类型为<code>std::function&lt;void(int, int, int)&gt;</code>，但这不是好办法，如果又要换回callback1，那这里又得修改。而且如果在代码中动态的切换callback函数，这样的修改是无法达到目的的。std::bind可以解决这个问题，很简单，只需要这样就行：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ResultProcessor rp;</span><br><span class="line">rp.setCallback(callback1);</span><br><span class="line">rp.doProcess(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用std::bind生成一个具有void(int,int)签名的函数对象</span></span><br><span class="line"><span class="comment">//至于这里的第3个参数，在实际场景则可以变得更有意义一些，这里只是demo。</span></span><br><span class="line">rp.setCallback(<span class="built_in">std</span>::bind(callback2, _1, _2, <span class="number">1</span>));</span><br><span class="line">rp.doProcess(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这样一来，既可以动态切换callback，又不用修改ResultProcessor类的声明，一举两得。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>std::function是一种统一的可以封装各种可调用对象（包括函数，lambda，函数指针，成员函数，仿函数等等）的方法，在C++11中用std::function来替代以前的函数指针是比较推荐的做法，这也是C++11建议的做法。std::bind将传入的函数与参数绑定起来返回一个新的函数对象，经常和std::function配合使用，可以提供极大的灵活性，例如上一小节中callback的例子。lambda也可以模拟std::bind，使用上来说没有std::bind简单，而且实际上他们俩的通途完全不同，所以请在合适的地方使用他们。</p>
+<h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><ul>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><code>emplace()</code> and other use of rvalue references throughout all parts of the existing library</p>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/memory/unique_ptr" target="_blank" rel="noopener">std::unique_ptr</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/move_iterator" target="_blank" rel="noopener">std::move_iterator</a></li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators" target="_blank" rel="noopener">stateful</a> and <a href="https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor" target="_blank" rel="noopener">scoped</a> allocators</p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/container/forward_list" target="_blank" rel="noopener">std::forward_list</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p>new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:</p>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::all_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::any_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::none_of</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/find" target="_blank" rel="noopener">std::find_if_not</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/copy" target="_blank" rel="noopener">std::copy_if</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/copy_n" target="_blank" rel="noopener">std::copy_n</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/move" target="_blank" rel="noopener">std::move</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/move_backward" target="_blank" rel="noopener">std::move_backward</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/random_shuffle" target="_blank" rel="noopener">std::random_shuffle</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/random_shuffle" target="_blank" rel="noopener">std::shuffle</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_partitioned" target="_blank" rel="noopener">std::is_partitioned</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/partition_copy" target="_blank" rel="noopener">std::partition_copy</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/partition_point" target="_blank" rel="noopener">std::partition_point</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_sorted" target="_blank" rel="noopener">std::is_sorted</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/is_sorted_until" target="_blank" rel="noopener">std::is_sorted_until</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_heap" target="_blank" rel="noopener">std::is_heap</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/is_heap_until" target="_blank" rel="noopener">std::is_heap_until</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/minmax" target="_blank" rel="noopener">std::minmax</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/minmax_element" target="_blank" rel="noopener">std::minmax_element</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_permutation" target="_blank" rel="noopener">std::is_permutation</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/iota" target="_blank" rel="noopener">std::iota</a>,</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/memory/uninitialized_copy_n" target="_blank" rel="noopener">std::uninitialized_copy_n</a></li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets" target="_blank" rel="noopener">Unicode conversion facets</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></p>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></p>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <p>std::bind</p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/error/exception_ptr" target="_blank" rel="noopener">std::exception_ptr</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/error/error_code" target="_blank" rel="noopener">std::error_code</a> and <a href="https://en.cppreference.com/w/cpp/error/error_condition" target="_blank" rel="noopener">std::error_condition</a></p>
+</li>
+<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/iterator" target="_blank" rel="noopener">iterator</a> improvements:</p>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/begin" target="_blank" rel="noopener">std::begin</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/end" target="_blank" rel="noopener">std::end</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/next" target="_blank" rel="noopener">std::next</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/prev" target="_blank" rel="noopener">std::prev</a></li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox"> <p>Unicode conversion functions</p>
+</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
