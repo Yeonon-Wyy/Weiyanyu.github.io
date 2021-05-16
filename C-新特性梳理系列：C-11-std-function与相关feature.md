@@ -1,3 +1,12 @@
+---
+title: C++新特性梳理系列：C++11 std::function和std::bind
+date: 2021-05-04 16:25:22
+tags:
+- C++11
+- 语法糖
+- 扩展	
+---
+
 从本文开始，后面的文章将介绍C++11 的Library features。
 
 本文将重点介绍std::function和std::bind，期间可能会提到其他相关的特性，提到的时候再细说。在正式介绍他们之前，先回想一下在C++11之前，我们如何传递一个函数？答案是通过**函数指针**。
@@ -243,10 +252,10 @@ std::function是一种统一的可以封装各种可调用对象（包括函数�
 ## 进度
 
 - [ ] [atomic operations library](https://en.cppreference.com/w/cpp/atomic)
+- [ ] smart pointer
 - [ ] `emplace()` and other use of rvalue references throughout all parts of the existing library
   - [ ] [std::unique_ptr](https://en.cppreference.com/w/cpp/memory/unique_ptr)
   - [ ] [std::move_iterator](https://en.cppreference.com/w/cpp/iterator/move_iterator)
-
 - [ ] [std::initializer_list](https://en.cppreference.com/w/cpp/utility/initializer_list)
 - [ ] [stateful](https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators) and [scoped](https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor) allocators
 - [ ] [std::forward_list](https://en.cppreference.com/w/cpp/container/forward_list)
@@ -265,7 +274,6 @@ std::function是一种统一的可以封装各种可调用对象（包括函数�
   - [ ] [std::is_permutation](https://en.cppreference.com/w/cpp/algorithm/is_permutation),
   - [ ] [std::iota](https://en.cppreference.com/w/cpp/algorithm/iota),
   - [ ] [std::uninitialized_copy_n](https://en.cppreference.com/w/cpp/memory/uninitialized_copy_n)
-
 - [ ] [Unicode conversion facets](https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets)
 - [ ] [thread library](https://en.cppreference.com/w/cpp/thread)
 - [x] [std::function](https://en.cppreference.com/w/cpp/utility/functional/function)
@@ -277,5 +285,4 @@ std::function是一种统一的可以封装各种可调用对象（包括函数�
   - [ ] [std::end](https://en.cppreference.com/w/cpp/iterator/end)
   - [ ] [std::next](https://en.cppreference.com/w/cpp/iterator/next)
   - [ ] [std::prev](https://en.cppreference.com/w/cpp/iterator/prev)
-
 - [ ] Unicode conversion functions
