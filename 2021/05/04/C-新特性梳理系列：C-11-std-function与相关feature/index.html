@@ -24,7 +24,7 @@
     <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
     <div class="post-title">
         <p>
-            C-新特性梳理系列：C-11-std-function与相关feature
+            C++新特性梳理系列：C++11 std::function和std::bind
         </p>
         <hr>
     </div>
@@ -83,26 +83,19 @@
 <p>这样一来，既可以动态切换callback，又不用修改ResultProcessor类的声明，一举两得。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>std::function是一种统一的可以封装各种可调用对象（包括函数，lambda，函数指针，成员函数，仿函数等等）的方法，在C++11中用std::function来替代以前的函数指针是比较推荐的做法，这也是C++11建议的做法。std::bind将传入的函数与参数绑定起来返回一个新的函数对象，经常和std::function配合使用，可以提供极大的灵活性，例如上一小节中callback的例子。lambda也可以模拟std::bind，使用上来说没有std::bind简单，而且实际上他们俩的通途完全不同，所以请在合适的地方使用他们。</p>
 <h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><ul>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><code>emplace()</code> and other use of rvalue references throughout all parts of the existing library</p>
-<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></li>
+<li><input disabled="" type="checkbox"> smart pointer</li>
+<li><input disabled="" type="checkbox"> <code>emplace()</code> and other use of rvalue references throughout all parts of the existing library<ul>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/memory/unique_ptr" target="_blank" rel="noopener">std::unique_ptr</a></li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/move_iterator" target="_blank" rel="noopener">std::move_iterator</a></li>
 </ul>
 </li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators" target="_blank" rel="noopener">stateful</a> and <a href="https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor" target="_blank" rel="noopener">scoped</a> allocators</p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/container/forward_list" target="_blank" rel="noopener">std::forward_list</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p>new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:</p>
-<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators" target="_blank" rel="noopener">stateful</a> and <a href="https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor" target="_blank" rel="noopener">scoped</a> allocators</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/container/forward_list" target="_blank" rel="noopener">std::forward_list</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></li>
+<li><input disabled="" type="checkbox"> new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:<ul>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::all_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::any_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::none_of</a>,</li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/find" target="_blank" rel="noopener">std::find_if_not</a>,</li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/copy" target="_blank" rel="noopener">std::copy_if</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/copy_n" target="_blank" rel="noopener">std::copy_n</a>,</li>
@@ -117,28 +110,20 @@
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/memory/uninitialized_copy_n" target="_blank" rel="noopener">std::uninitialized_copy_n</a></li>
 </ul>
 </li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets" target="_blank" rel="noopener">Unicode conversion facets</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></p>
-</li>
-<li><input checked="" disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></p>
-</li>
-<li><input checked="" disabled="" type="checkbox"> <p>std::bind</p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/error/exception_ptr" target="_blank" rel="noopener">std::exception_ptr</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/error/error_code" target="_blank" rel="noopener">std::error_code</a> and <a href="https://en.cppreference.com/w/cpp/error/error_condition" target="_blank" rel="noopener">std::error_condition</a></p>
-</li>
-<li><input disabled="" type="checkbox"> <p><a href="https://en.cppreference.com/w/cpp/iterator" target="_blank" rel="noopener">iterator</a> improvements:</p>
-<ul>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets" target="_blank" rel="noopener">Unicode conversion facets</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></li>
+<li><input checked="" disabled="" type="checkbox"> std::bind</li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/error/exception_ptr" target="_blank" rel="noopener">std::exception_ptr</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/error/error_code" target="_blank" rel="noopener">std::error_code</a> and <a href="https://en.cppreference.com/w/cpp/error/error_condition" target="_blank" rel="noopener">std::error_condition</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator" target="_blank" rel="noopener">iterator</a> improvements:<ul>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/begin" target="_blank" rel="noopener">std::begin</a></li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/end" target="_blank" rel="noopener">std::end</a></li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/next" target="_blank" rel="noopener">std::next</a></li>
 <li><input disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/iterator/prev" target="_blank" rel="noopener">std::prev</a></li>
 </ul>
 </li>
-<li><input disabled="" type="checkbox"> <p>Unicode conversion functions</p>
-</li>
+<li><input disabled="" type="checkbox"> Unicode conversion functions</li>
 </ul>
 
     </div>

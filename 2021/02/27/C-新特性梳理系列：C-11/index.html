@@ -24,7 +24,7 @@
     <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
     <div class="post-title">
         <p>
-            C++新特性梳理系列：C++ 11开篇
+            C++新特性梳理系列：C++11 开篇
         </p>
         <hr>
     </div>
@@ -69,26 +69,19 @@
 <li><a href="https://en.cppreference.com/w/cpp/language/static_assert" target="_blank" rel="noopener"><code>static_assert</code></a> (based on a Boost library)</li>
 </ul>
 <h3 id="Library-features"><a href="#Library-features" class="headerlink" title="Library features"></a>Library features</h3><ul>
-<li><p><a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></p>
-</li>
-<li><p><code>emplace()</code> and other use of rvalue references throughout all parts of the existing library</p>
-<ul>
+<li><a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></li>
+<li>smart pointer</li>
+<li><code>emplace()</code> and other use of rvalue references throughout all parts of the existing library<ul>
 <li><a href="https://en.cppreference.com/w/cpp/memory/unique_ptr" target="_blank" rel="noopener">std::unique_ptr</a></li>
 <li><a href="https://en.cppreference.com/w/cpp/iterator/move_iterator" target="_blank" rel="noopener">std::move_iterator</a></li>
 </ul>
 </li>
-<li><p><a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators" target="_blank" rel="noopener">stateful</a> and <a href="https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor" target="_blank" rel="noopener">scoped</a> allocators</p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/container/forward_list" target="_blank" rel="noopener">std::forward_list</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></p>
-</li>
-<li><p>new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:</p>
-<ul>
+<li><a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/named_req/Allocator#Stateful_and_stateless_allocators" target="_blank" rel="noopener">stateful</a> and <a href="https://en.cppreference.com/w/cpp/memory/scoped_allocator_adaptor" target="_blank" rel="noopener">scoped</a> allocators</li>
+<li><a href="https://en.cppreference.com/w/cpp/container/forward_list" target="_blank" rel="noopener">std::forward_list</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></li>
+<li>new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:<ul>
 <li><a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::all_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::any_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::none_of</a>,</li>
 <li><a href="https://en.cppreference.com/w/cpp/algorithm/find" target="_blank" rel="noopener">std::find_if_not</a>,</li>
 <li><a href="https://en.cppreference.com/w/cpp/algorithm/copy" target="_blank" rel="noopener">std::copy_if</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/copy_n" target="_blank" rel="noopener">std::copy_n</a>,</li>
@@ -103,26 +96,19 @@
 <li><a href="https://en.cppreference.com/w/cpp/memory/uninitialized_copy_n" target="_blank" rel="noopener">std::uninitialized_copy_n</a></li>
 </ul>
 </li>
-<li><p><a href="https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets" target="_blank" rel="noopener">Unicode conversion facets</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/error/exception_ptr" target="_blank" rel="noopener">std::exception_ptr</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/error/error_code" target="_blank" rel="noopener">std::error_code</a> and <a href="https://en.cppreference.com/w/cpp/error/error_condition" target="_blank" rel="noopener">std::error_condition</a></p>
-</li>
-<li><p><a href="https://en.cppreference.com/w/cpp/iterator" target="_blank" rel="noopener">iterator</a> improvements:</p>
-<ul>
+<li><a href="https://en.cppreference.com/w/cpp/locale#Locale-independent_unicode_conversion_facets" target="_blank" rel="noopener">Unicode conversion facets</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/error/exception_ptr" target="_blank" rel="noopener">std::exception_ptr</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/error/error_code" target="_blank" rel="noopener">std::error_code</a> and <a href="https://en.cppreference.com/w/cpp/error/error_condition" target="_blank" rel="noopener">std::error_condition</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/iterator" target="_blank" rel="noopener">iterator</a> improvements:<ul>
 <li><a href="https://en.cppreference.com/w/cpp/iterator/begin" target="_blank" rel="noopener">std::begin</a></li>
 <li><a href="https://en.cppreference.com/w/cpp/iterator/end" target="_blank" rel="noopener">std::end</a></li>
 <li><a href="https://en.cppreference.com/w/cpp/iterator/next" target="_blank" rel="noopener">std::next</a></li>
 <li><a href="https://en.cppreference.com/w/cpp/iterator/prev" target="_blank" rel="noopener">std::prev</a></li>
 </ul>
 </li>
-<li><p><a href="https://en.cppreference.com/w/cpp/string/multibyte" target="_blank" rel="noopener">Unicode conversion functions</a></p>
-</li>
+<li><a href="https://en.cppreference.com/w/cpp/string/multibyte" target="_blank" rel="noopener">Unicode conversion functions</a></li>
 </ul>
 <h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>本文作为开遍文，介绍了写作本系列文章的原因和目的，并列举了C++11的各个新特性。我会在后续的文章中一一介绍每个新特性，如果项目中有用到该特性的地方，我会加上一些真实项目中使用的示例，否则就只会是一些demo。</p>
 
