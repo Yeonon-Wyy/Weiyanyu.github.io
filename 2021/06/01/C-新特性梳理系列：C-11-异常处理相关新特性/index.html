@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++11 异常处理相关新特性
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>C++中异常相关的类和函数都包含在<code>&lt;exception&gt;</code>里，包括std::exception，std::bad_exception等等。C++11新增了一些类和函数，相当于扩展了C++的异常机制，新增的内容包括：</p>
+<ul>
+<li>std::nested_exception，这是一个组合类型，即其内部成员包含了std::exception，相比于std::exception，std::nested_exception能用在嵌套抛出异常的场景中且可以保存每一层的异常信息。可能不太好理解，稍后会有示例帮助各位理解。</li>
+<li>std::exception_ptr，这是一个shared_ptr，指向异常对象，可以通过判断是否为nullptr来判断是否有异常，也可以将其保存下来传递给其他函数或者线程。</li>
+<li>current_exception，捕获异常并返回一个std::exception_ptr。</li>
+<li>rethrow_exception，接受一个std::exception_ptr，将此异常对象重新抛出。</li>
+<li>throw_with_nested，接受一个std::nested_exception，即以嵌套的方式抛出。</li>
+<li>rethrow_if_nested，接受一个std::nested_exception，如果该异常对象是嵌套的异常对象才会重新抛出。</li>
+</ul>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>下面以一个示例介绍以上新增的类和函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printException</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::exception&amp; e)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cerr</span> &lt;&lt; <span class="string">"exception: "</span> &lt;&lt; e.what() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="built_in">std</span>::rethrow_if_nested(e);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="keyword">const</span> <span class="built_in">std</span>::exception&amp; e) &#123;</span><br><span class="line">        printException(e);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (...) &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">boringFunc1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span>().at(<span class="number">1</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (...) &#123;</span><br><span class="line">        <span class="built_in">std</span>::throw_with_nested(<span class="built_in">std</span>::runtime_error(<span class="string">"boringFunc1 faild"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">boringFunc</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        boringFunc1();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (...) &#123;</span><br><span class="line">        <span class="built_in">std</span>::throw_with_nested(<span class="built_in">std</span>::runtime_error(<span class="string">"boringFunc faild"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handleException</span><span class="params">(<span class="built_in">std</span>::exception_ptr eptr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (eptr) &#123;</span><br><span class="line">            <span class="built_in">std</span>::rethrow_exception(eptr);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (<span class="keyword">const</span> <span class="built_in">std</span>::exception&amp; e) &#123;</span><br><span class="line">        printException(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        boringFunc();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (...) &#123;</span><br><span class="line">        <span class="built_in">std</span>::exception_ptr eptr = <span class="built_in">std</span>::current_exception();</span><br><span class="line">        handleException(eptr);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出是这样的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">exception: boringFunc faild</span><br><span class="line">exception: boringFunc2 faild</span><br><span class="line">exception: basic_string::at: __n (which is 1) &gt;= this-&gt;size() (which is 0)</span><br></pre></td></tr></table></figure>
+
+<p>这个示例稍微有些刻意了，仅作为示例，正常使用不用搞的那么复杂，我大概解释一下嵌套异常：</p>
+<ol>
+<li>在boringFunc1中发生了异常（out of range），由于被try-catch包起来，所以不会直接挂掉。在catch里调用了std::throw_with_nested以嵌套的方式抛出异常，boringFunc同理，注意此时又新建了一个异常对象。但boringFunc1里的异常对象并没有被覆盖掉，而是被保存起来了，这个结构类似栈，此时boringFunc的异常对象在栈顶，std::string().at(1)导致的out-of-range异常在栈底。</li>
+<li>然后调用栈弹出，回到main函数，触发了catch，这里首先捕获异常，然后丢到handleException函数里去处理异常。</li>
+<li>在handleException里判断std::exception_ptr，不为空则抛出异常并且被catch捕获，之后调用printException，在printException里调用了std::exception::what来打印异常信息，然后调用std::rethrow_if_nested来重新抛出这个嵌套的异常对象。同样会被catch，catch里递归的调用printException来打印下一次信息。</li>
+<li>在1中有说到，嵌套异常对象的存储是栈式存储的，所以打印的顺序是boringFunc,boringFunc2,out-of-range，如输出所示。</li>
+</ol>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文的内容介绍的比较简单，一是因为在我们的项目中其实使用到异常机制的地方不多，因为我们的场景一旦发生了异常，大部分都是不可自动恢复的，如果发生了异常也最好直接让他crash，方便定位问题。当然如果这个异常是可以恢复的，使用异常处理机制来处理异常也是不错的选择。另外标准库中很多都用到了异常机制。</p>
+<p>本文也是C++11新特性系列的最后一篇文章了，C++11新增的东西不只本系列文章提到的，还有例如std::remove_reference等这种日常很少用到的（一般是库的开发者会用到，或者实现一些trick的功能），各位可以通过查阅文档或者在写代码的过程中去了解，之后将开启C++14新特性系列。</p>
+<h2 id="进度"><a href="#进度" class="headerlink" title="进度"></a>进度</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/atomic" target="_blank" rel="noopener">atomic operations library</a></li>
+<li><input checked="" disabled="" type="checkbox"> smart pointer</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/utility/initializer_list" target="_blank" rel="noopener">std::initializer_list</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/chrono" target="_blank" rel="noopener">chrono library</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/numeric/ratio" target="_blank" rel="noopener">ratio library</a></li>
+<li><input checked="" disabled="" type="checkbox"> new <a href="https://en.cppreference.com/w/cpp/algorithm" target="_blank" rel="noopener">algorithms</a>:<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::all_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::any_of</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/all_any_none_of" target="_blank" rel="noopener">std::none_of</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/find" target="_blank" rel="noopener">std::find_if_not</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/copy" target="_blank" rel="noopener">std::copy_if</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/copy_n" target="_blank" rel="noopener">std::copy_n</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/random_shuffle" target="_blank" rel="noopener">std::random_shuffle</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/random_shuffle" target="_blank" rel="noopener">std::shuffle</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_partitioned" target="_blank" rel="noopener">std::is_partitioned</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/partition_copy" target="_blank" rel="noopener">std::partition_copy</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/partition_point" target="_blank" rel="noopener">std::partition_point</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_sorted" target="_blank" rel="noopener">std::is_sorted</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/is_sorted_until" target="_blank" rel="noopener">std::is_sorted_until</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_heap" target="_blank" rel="noopener">std::is_heap</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/is_heap_until" target="_blank" rel="noopener">std::is_heap_until</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/minmax" target="_blank" rel="noopener">std::minmax</a>, <a href="https://en.cppreference.com/w/cpp/algorithm/minmax_element" target="_blank" rel="noopener">std::minmax_element</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/is_permutation" target="_blank" rel="noopener">std::is_permutation</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/algorithm/iota" target="_blank" rel="noopener">std::iota</a>,</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/memory/uninitialized_copy_n" target="_blank" rel="noopener">std::uninitialized_copy_n</a></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/thread" target="_blank" rel="noopener">thread library</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="_blank" rel="noopener">std::function</a></li>
+<li><input checked="" disabled="" type="checkbox"> std::bind</li>
+<li><input checked="" disabled="" type="checkbox"> std::exception_ptr</li>
+</ul>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
