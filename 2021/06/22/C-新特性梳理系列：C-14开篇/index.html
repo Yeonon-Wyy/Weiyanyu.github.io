@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Yeonon&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            C++新特性梳理系列：C++14开篇
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>C++14是一个小版本，更新的特性不多，基本都对原有特性的扩展。和之前一样，把新增的内容分为两类，语言特性和标准库新特性。</p>
+<h3 id="语言特性"><a href="#语言特性" class="headerlink" title="语言特性"></a>语言特性</h3><ul>
+<li><a href="https://en.cppreference.com/w/cpp/language/variable_template" target="_blank" rel="noopener">variable templates</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/lambda" target="_blank" rel="noopener">generic lambdas</a></li>
+<li>lambda init-capture</li>
+<li>new/delete elision</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/constexpr" target="_blank" rel="noopener">relaxed restrictions on constexpr functions</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/integer_literal" target="_blank" rel="noopener">binary literals</a></li>
+<li>digit separators</li>
+<li><a href="https://en.cppreference.com/w/cpp/language/function#Return_type_deduction_.28since_C.2B.2B14.29" target="_blank" rel="noopener">return type deduction for functions</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/aggregate_initialization" target="_blank" rel="noopener">aggregate classes</a> with default non-static member initializers.</li>
+</ul>
+<h3 id="标准库新特性："><a href="#标准库新特性：" class="headerlink" title="标准库新特性："></a>标准库新特性：</h3><ul>
+<li><a href="https://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique" target="_blank" rel="noopener">std::make_unique</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/thread/shared_timed_mutex" target="_blank" rel="noopener">std::shared_timed_mutex</a> and <a href="https://en.cppreference.com/w/cpp/thread/shared_lock" target="_blank" rel="noopener">std::shared_lock</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/utility/integer_sequence" target="_blank" rel="noopener">std::integer_sequence</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/utility/exchange" target="_blank" rel="noopener">std::exchange</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/io/manip/quoted" target="_blank" rel="noopener">std::quoted</a></li>
+<li>and many small improvements to existing library facilities, such as<ul>
+<li>two-range overloads for some algorithms</li>
+<li>type alias versions of type traits</li>
+<li>user-defined literals for <a href="https://en.cppreference.com/w/cpp/string/basic_string" target="_blank" rel="noopener"><code>basic_string</code></a>, <a href="https://en.cppreference.com/w/cpp/chrono/duration" target="_blank" rel="noopener"><code>duration</code></a> and <a href="https://en.cppreference.com/w/cpp/numeric/complex" target="_blank" rel="noopener"><code>complex</code></a></li>
+<li>etc.</li>
+</ul>
+</li>
+</ul>
+<p>关于C++14，我打算只写两篇文章来介绍，分别对应上述的两个部分，这是因为C++14的内容偏少，且大多数只是扩展。话不多说，直接开始C++14的篇章吧！</p>
+
+    </div>
+
+    
+</div>
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" href="https://hexo.io" target="_blank" rel="noopener">Hexo</a>-<a class="flink" href="https://github.com/sanjinhub/hexo-theme-geek" target="_blank" rel="noopener">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
+</div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
+
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
+
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
+
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
+
+.v a {
+    color: #8696b1;
+}
+
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
+</body>
+
+</html>
